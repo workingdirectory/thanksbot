@@ -23,6 +23,30 @@ function confirmThankYou(text) {
     // replace text if not correct
 }
 
+async function formatThankYou(tyObj, previousText) {
+    let intro =
+        previousText ||
+        '✨🙏✨ We have some thank yous this week, hooray! ✨☺️✨';
+
+    for (const [name, text] of Object.entries(tyObj)) {
+        intro += `\n - ${name} says ${text}`;
+    }
+
+    return intro;
+}
+
+async function getExistingThankYou() {
+    let { scheduled_messages } = await slackWeb.chat.scheduledMessages.list();
+
+    if (scheduled_messages.length) {
+        return scheduled_messages.find(({ text }) => {
+            return text.includes('We have some thank yous');
+        });
+    }
+
+    return null;
+}
+
 /*
  * store message along with sender's display name
  */
@@ -31,14 +55,16 @@ async function storeThankYou(name, text) {
         .day(1)
         .add(7, 'day');
 
+    const previousTy = await getExistingThankYou();
+    const previousText = previousTy ? previousTy.text : null;
+    const tyText = await formatThankYou({ [name]: text }, previousText);
+
     try {
         await slackWeb.chat.scheduleMessage({
             channel: '#general',
-            text: `${name}: ${text}`,
+            text: tyText,
             post_at: nextMonday.unix()
         });
-
-        console.log(await slackWeb.chat.scheduledMessages.list());
     } catch (error) {
         console.log(error);
     }
@@ -46,9 +72,11 @@ async function storeThankYou(name, text) {
 
 slackEvents.on('message', async event => {
     const { text, user } = event;
-    const name = await getDisplayName(user);
 
-    storeThankYou(name, text);
+    if (event.channel_type === 'im') {
+        const name = await getDisplayName(user);
+        storeThankYou(name, text);
+    }
 });
 slackEvents.on('error', console.error);
 
