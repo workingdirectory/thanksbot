@@ -108,3 +108,15 @@ exports.confirmThankYou = async function(tyText, channel) {
         console.log(error);
     }
 };
+
+exports.tyReminder = async function() {
+    try {
+        await slackWeb.chat.postMessage({
+            channel: '#general',
+            text:
+                '👋 Howdy! Feeling like someone in this community has been helpful or kind this week? Send thanksbot a direct message to acknowledge this person! Your shout out will be posted on Monday 💪 🎉'
+        });
+    } catch (error) {
+        console.log(error);
+    }
+};
