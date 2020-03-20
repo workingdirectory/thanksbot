@@ -2,6 +2,14 @@
 
 thanksbot is an open source chat app for Slack that records individual messages of affirmation and shares them periodically with your workspace.
 
+## Add to Slack
+
+
+<a href="https://slack.com/oauth/authorize?scope=incoming-webhook,bot&client_id=962050889920.989827594197&redirect_uri=https://cf026c2a.ngrok.io/slack/auth">
+    <img alt=""Add to Slack"" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" />
+</a>
+
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.

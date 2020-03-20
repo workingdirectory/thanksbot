@@ -19,6 +19,11 @@ const reminderMessage = new CronJob(
 
 app.use('/slack/events', slackEvents.requestListener());
 app.use('/slack/interactions', slackInteractions.requestListener());
+app.use('/slack/auth', (req, res) => {
+    console.log('req', req);
+});
+
 reminderMessage.start();
+
 
 app.listen(port, () => console.log(`Listening on ${port}`));
