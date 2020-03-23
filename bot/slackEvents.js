@@ -10,6 +10,7 @@ slackEvents.on('message', async event => {
         confirmThankYou(text, channel, team);
     }
 });
+
 slackEvents.on('error', console.error);
 
 module.exports = slackEvents;

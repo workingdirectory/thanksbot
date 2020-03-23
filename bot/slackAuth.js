@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const fetch = require('node-fetch');
 const { Pool } = require('pg');
 const { getDbConfig } = require('./dbConfig');
+const { initWeb } = require('./slackWeb');
 
 const pool = new Pool(getDbConfig());
 const RESIZED_IV = Buffer.allocUnsafe(16);
@@ -32,25 +33,24 @@ exports.authResponse = async function(req, res) {
     const authResponse = await fetch(slackURL).then(res => res.json());
 
     if (!authResponse.ok) {
-        console.log(authResponse);
         res.send('Error encountered: \n' + JSON.stringify(authResponse))
             .status(200)
             .end();
-    } else {
-        const {
-            team: { id },
-            access_token
-        } = authResponse;
-        console.log('authResponse', authResponse);
-        const saveSuccess = await saveSlackToken(id, access_token);
-
-        if (saveSuccess) {
-            // TO DO: better celebratory page or redirect to another site?
-            res.send('Success!');
-        }
-
-        // TO DO: better error messaging if no save success
     }
+    const {
+        team: { id },
+        access_token
+    } = authResponse;
+
+    const saveSuccess = await saveSlackToken(id, access_token);
+
+    if (saveSuccess) {
+        initWeb(access_token);
+        // TO DO: better celebratory page or redirect to another site?
+        res.send('Success!');
+    }
+
+    // TO DO: better error messaging if no save success
 };
 
 const decryptToken = function(encryptedToken) {
@@ -98,10 +98,10 @@ const saveSlackToken = async function(teamId, token) {
     const botToken = encryptToken(token);
 
     return client
-        .query('INSERT INTO tokens (team_id, token) VALUES ($1, $2)', [
-            teamId,
-            botToken
-        ])
+        .query(
+            'INSERT INTO tokens (team_id, token) VALUES ($1, $2) ON CONFLICT (team_id) DO UPDATE SET token = EXCLUDED.token',
+            [teamId, botToken]
+        )
         .then(() => {
             client.release();
             return true;

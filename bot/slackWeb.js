@@ -7,8 +7,10 @@ const webAPI = {
      * send message that repeats the thank you text to confirm spelling
      */
     confirmThankYou: async function(tyText, channel, team) {
-        const token = await getSlackToken(team);
-        webAPI.slackWeb = new WebClient(token);
+        if (!webAPI.slackWeb) {
+            const token = await getSlackToken(team);
+            webAPI.slackWeb = new WebClient(token);
+        }
 
         try {
             await webAPI.slackWeb.chat.postMessage({
@@ -75,6 +77,13 @@ const webAPI = {
 
         return intro;
     },
+    initWeb: async function(token) {
+        webAPI.slackWeb = new WebClient(token);
+        const { channels } = await webAPI.slackWeb.conversations.list();
+        const { id } = channels.find(({ is_general }) => is_general);
+
+        await webAPI.slackWeb.conversations.join({ channel: id });
+    },
     slackWeb: null,
     /*
      * store message along with sender's display name
@@ -85,7 +94,6 @@ const webAPI = {
             .hour(12)
             .minute(0)
             .add(7, 'day');
-
         const previousTy = await webAPI.getExistingThankYou();
         const previousText = previousTy ? previousTy.text : null;
         const tyText = webAPI.formatThankYou(
