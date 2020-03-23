@@ -1,6 +1,8 @@
 const dayjs = require('dayjs');
 const { WebClient } = require('@slack/web-api');
-const { getSlackToken } = require('./slackAuth.js');
+const slackAuth = require('./slackAuth.js');
+
+const DIGEST_POST_DAY = 5;
 
 const webAPI = {
     /**
@@ -8,7 +10,7 @@ const webAPI = {
      */
     confirmThankYou: async function(tyText, channel, team) {
         if (!webAPI.slackWeb) {
-            const token = await getSlackToken(team);
+            const token = await slackAuth.getSlackToken(team);
             webAPI.slackWeb = new WebClient(token);
         }
 
@@ -89,11 +91,19 @@ const webAPI = {
      * store message along with sender's display name
      */
     storeThankYou: async function(user, text) {
-        const nextMonday = dayjs()
-            .day(1)
+        const today = dayjs().day();
+        let nextPostDay = dayjs()
+            .day(DIGEST_POST_DAY)
             .hour(12)
-            .minute(0)
-            .add(7, 'day');
+            .minute(0);
+
+        // DayJS will use today's date value if it is the same as
+        // the day of the week we want. If so, add 7 days for the
+        // following week's digest posting day
+        if (today == DIGEST_POST_DAY) {
+            nextPostDay = dayjs(nextPostDay).add(7, 'day');
+        }
+
         const previousTy = await webAPI.getExistingThankYou();
         const previousText = previousTy ? previousTy.text : null;
         const tyText = webAPI.formatThankYou(
@@ -112,7 +122,7 @@ const webAPI = {
             await webAPI.slackWeb.chat.scheduleMessage({
                 channel: '#general',
                 text: tyText,
-                post_at: nextMonday.unix(),
+                post_at: nextPostDay.unix(),
                 link_names: true
             });
         } catch (error) {
