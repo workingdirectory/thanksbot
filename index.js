@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const CronJob = require('cron').CronJob;
+const { authResponse } = require('./bot/slackAuth.js');
 const slackInteractions = require('./bot/slackInteractions');
 const slackEvents = require('./bot/slackEvents');
 const { tyReminder } = require('./bot/slackWeb');
@@ -19,6 +20,8 @@ const reminderMessage = new CronJob(
 
 app.use('/slack/events', slackEvents.requestListener());
 app.use('/slack/interactions', slackInteractions.requestListener());
+app.get('/slack/auth', authResponse);
+
 reminderMessage.start();
 
 app.listen(port, () => console.log(`Listening on ${port}`));
