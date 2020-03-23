@@ -4,7 +4,7 @@ thanksbot is an open source chat app for Slack that records individual messages 
 
 ## Add to Slack
 
-<a href="https://slack.com/oauth/v2/authorize?client_id=962050889920.989827594197&scope=app_mentions:read,channels:history,channels:join,channels:manage,chat:write,chat:write.customize,groups:history,im:history,im:read,im:write,incoming-webhook&redirect_uri=https://cf026c2a.ngrok.io/slack/auth">
+<a href="https://slack.com/oauth/v2/authorize?client_id=962050889920.989827594197&scope=app_mentions:read,channels:history,channels:join,channels:manage,chat:write,chat:write.customize,groups:history,im:history,im:read,im:write,incoming-webhook,channels:read&redirect_uri=https://cf026c2a.ngrok.io/slack/auth">
     <img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x">
 </a>
 
