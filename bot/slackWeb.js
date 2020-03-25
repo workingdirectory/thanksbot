@@ -1,21 +1,23 @@
+const CronJob = require('cron').CronJob;
 const dayjs = require('dayjs');
 const { WebClient } = require('@slack/web-api');
-const slackAuth = require('./slackAuth.js');
+const slackAuth = require('./slackAuth');
 
 const DIGEST_POST_DAY = 5;
 
-const webAPI = {
+class webAPI {
+    constructor(team) {
+        this.team = team;
+    }
+
     /**
      * send message that repeats the thank you text to confirm spelling
      */
-    confirmThankYou: async function(tyText, channel, team) {
-        if (!webAPI.slackWeb) {
-            const token = await slackAuth.getSlackToken(team);
-            webAPI.slackWeb = new WebClient(token);
-        }
+    async confirmThankYou(tyText, channel, team) {
+        const slackClient = await this.getSlackClient(team);
 
         try {
-            await webAPI.slackWeb.chat.postMessage({
+            await slackClient.chat.postMessage({
                 channel,
                 blocks: [
                     {
@@ -54,11 +56,14 @@ const webAPI = {
         } catch (error) {
             console.log(error);
         }
-    },
-    getExistingThankYou: async function() {
+    }
+
+    async getExistingThankYou() {
+        const slackClient = await this.getSlackClient();
+
         let {
             scheduled_messages
-        } = await webAPI.slackWeb.chat.scheduledMessages.list();
+        } = await slackClient.chat.scheduledMessages.list();
 
         if (scheduled_messages.length) {
             return scheduled_messages.find(({ text }) => {
@@ -67,8 +72,9 @@ const webAPI = {
         }
 
         return null;
-    },
-    formatThankYou: function(tyObj, previousText = null) {
+    }
+
+    formatThankYou(tyObj, previousText = null) {
         let intro =
             previousText ||
             '✨🙏✨ We have some thank yous this week, hooray! ✨☺️✨';
@@ -78,19 +84,40 @@ const webAPI = {
         }
 
         return intro;
-    },
-    initWeb: async function(token) {
-        webAPI.slackWeb = new WebClient(token);
-        const { channels } = await webAPI.slackWeb.conversations.list();
-        const { id } = channels.find(({ is_general }) => is_general);
+    }
 
-        await webAPI.slackWeb.conversations.join({ channel: id });
-    },
-    slackWeb: null,
+    async getSlackClient(team = null, token = null) {
+        if (!token) {
+            token = await slackAuth.getSlackToken(team || this.team);
+        }
+
+        return new WebClient(token);
+    }
+
+    async init(team, token) {
+        const slackClient = await this.getSlackClient(team, token);
+        const { channels } = await slackClient.conversations.list();
+        const { id } = channels.find(({ is_general }) => is_general);
+        const reminderMessage = new CronJob(
+            '0 45 17 * * 3',
+            () => {
+                this.tyReminder();
+            },
+            null,
+            true,
+            'America/New_York'
+        );
+
+        await slackClient.conversations.join({ channel: id });
+
+        reminderMessage.start();
+    }
+
     /*
      * store message along with sender's display name
      */
-    storeThankYou: async function(user, text) {
+    async storeThankYou(user, text, team) {
+        const slackClient = await this.getSlackClient(team);
         const today = dayjs().day();
         let nextPostDay = dayjs()
             .day(DIGEST_POST_DAY)
@@ -104,22 +131,22 @@ const webAPI = {
             nextPostDay = dayjs(nextPostDay).add(7, 'day');
         }
 
-        const previousTy = await webAPI.getExistingThankYou();
+        const previousTy = await this.getExistingThankYou();
         const previousText = previousTy ? previousTy.text : null;
-        const tyText = webAPI.formatThankYou(
+        const tyText = this.formatThankYou(
             { [`@${user.username}`]: text },
             previousText
         );
 
         if (previousTy) {
-            webAPI.slackWeb.chat.deleteScheduledMessage({
+            slackClient.chat.deleteScheduledMessage({
                 channel: previousTy.channel_id,
                 scheduled_message_id: previousTy.id
             });
         }
 
         try {
-            await webAPI.slackWeb.chat.scheduleMessage({
+            await slackClient.chat.scheduleMessage({
                 channel: '#general',
                 text: tyText,
                 post_at: nextPostDay.unix(),
@@ -128,10 +155,12 @@ const webAPI = {
         } catch (error) {
             console.log(error);
         }
-    },
-    tyReminder: async function() {
+    }
+
+    async tyReminder(team = null) {
+        const slackClient = await this.getSlackClient(team || this.team);
         try {
-            await webAPI.slackWeb.chat.postMessage({
+            await slackClient.chat.postMessage({
                 channel: '#general',
                 text:
                     '👋 Howdy! Feeling like someone in this community has been helpful or kind this week? Send thanksbot a direct message to acknowledge this person! Your shout out will be posted on Monday 💪 🎉'
@@ -140,6 +169,6 @@ const webAPI = {
             console.log(error);
         }
     }
-};
+}
 
 module.exports = webAPI;

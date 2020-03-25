@@ -1,13 +1,18 @@
 const { createMessageAdapter } = require('@slack/interactive-messages');
-const { storeThankYou } = require('./slackWeb');
+const slackWeb = require('./slackWeb');
 
 const slackInteractions = createMessageAdapter(
     process.env.SLACK_SIGNING_SECRET
 );
 
 slackInteractions.action({ type: 'button' }, (payload, respond) => {
-    const { user, actions } = payload;
+    const {
+        user,
+        actions,
+        team: { id }
+    } = payload;
     const tyConfirmed = actions[0].value !== 'cancel';
+    const webAPI = new slackWeb(id);
 
     if (tyConfirmed) {
         respond({
@@ -15,7 +20,7 @@ slackInteractions.action({ type: 'button' }, (payload, respond) => {
                 'Thank you for your submission! It will be shared in the weekly digest.',
             response_type: 'in_channel'
         });
-        storeThankYou(user, actions[0].value);
+        webAPI.storeThankYou(user, actions[0].value);
     } else {
         respond({
             text:

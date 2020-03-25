@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const fetch = require('node-fetch');
 const { Pool } = require('pg');
 const { getDbConfig } = require('./dbConfig');
-const { initWeb } = require('./slackWeb');
+const webAPI = require('./slackWeb');
 
 const pool = new Pool(getDbConfig());
 const RESIZED_IV = Buffer.allocUnsafe(16);
@@ -45,7 +45,7 @@ exports.authResponse = async function(req, res) {
     const saveSuccess = await saveSlackToken(id, access_token);
 
     if (saveSuccess) {
-        initWeb(access_token);
+        webAPI.init(id, access_token);
         // TO DO: better celebratory page or redirect to another site?
         res.send('Success!');
     }

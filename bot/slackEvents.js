@@ -1,13 +1,14 @@
 const { createEventAdapter } = require('@slack/events-api');
-const { confirmThankYou } = require('./slackWeb');
+const slackWeb = require('./slackWeb');
 
 const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET);
 
 slackEvents.on('message', async event => {
     const { channel, team, text } = event;
+    const webAPI = new slackWeb(team);
 
     if (event.channel_type === 'im' && event.client_msg_id) {
-        confirmThankYou(text, channel, team);
+        webAPI.confirmThankYou(text, channel, team);
     }
 });
 
