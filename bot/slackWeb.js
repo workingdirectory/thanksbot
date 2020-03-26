@@ -1,8 +1,16 @@
 const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
 const { WebClient } = require('@slack/web-api');
 const slackAuth = require('./slackAuth');
 
 const DIGEST_POST_DAY = 5;
+// This hour values is in UTC time,
+// is around 12 EST depending on daylight savings
+const DIGEST_POST_HOUR = 16;
+const DIGEST_POST_MINUTE = 0;
+const THREE_MINUTES = 180;
+
+dayjs.extend(utc);
 
 class webAPI {
     constructor(team) {
@@ -57,7 +65,7 @@ class webAPI {
         }
     }
 
-    async getExistingThankYou() {
+    async getExistingThankYou(postTime) {
         const slackClient = await this.getSlackClient();
 
         let {
@@ -65,12 +73,32 @@ class webAPI {
         } = await slackClient.chat.scheduledMessages.list();
 
         if (scheduled_messages.length) {
-            return scheduled_messages.find(({ text }) => {
-                return text.includes('We have some thank yous');
+            return scheduled_messages.find(({ post_at }) => {
+                let currentPostDay = dayjs.unix(postTime).day();
+                let scheduledPostDay = dayjs.unix(post_at).day();
+
+                return currentPostDay === scheduledPostDay;
             });
         }
 
         return null;
+    }
+
+    getPostTime() {
+        const today = dayjs().unix();
+        let nextPostTime = dayjs()
+            .utc()
+            .day(DIGEST_POST_DAY)
+            .hour(DIGEST_POST_HOUR)
+            .minute(DIGEST_POST_MINUTE);
+
+        // Check if we're close to or past the digest posting time
+        // and get nexts week's post time if so
+        if (today > nextPostTime.unix() - THREE_MINUTES) {
+            nextPostTime = dayjs(nextPostTime).add(7, 'day');
+        }
+
+        return nextPostTime.unix();
     }
 
     formatThankYou(tyObj, previousText = null) {
@@ -104,20 +132,8 @@ class webAPI {
      */
     async storeThankYou(user, text) {
         const slackClient = await this.getSlackClient();
-        const today = dayjs().day();
-        let nextPostDay = dayjs()
-            .day(DIGEST_POST_DAY)
-            .hour(12)
-            .minute(0);
-
-        // DayJS will use today's date value if it is the same as
-        // the day of the week we want. If so, add 7 days for the
-        // following week's digest posting day
-        if (today == DIGEST_POST_DAY) {
-            nextPostDay = dayjs(nextPostDay).add(7, 'day');
-        }
-
-        const previousTy = await this.getExistingThankYou();
+        const postTime = this.getPostTime();
+        const previousTy = await this.getExistingThankYou(postTime);
         const previousText = previousTy ? previousTy.text : null;
         const tyText = this.formatThankYou(
             { [`@${user.username}`]: text },
@@ -135,7 +151,7 @@ class webAPI {
             await slackClient.chat.scheduleMessage({
                 channel: '#general',
                 text: tyText,
-                post_at: nextPostDay.unix(),
+                post_at: postTime,
                 link_names: true
             });
         } catch (error) {
