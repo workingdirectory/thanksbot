@@ -8,7 +8,7 @@ slackEvents.on('message', async event => {
     const webAPI = new slackWeb(team);
 
     if (event.channel_type === 'im' && event.client_msg_id) {
-        webAPI.confirmThankYou(text, channel, team);
+        webAPI.confirmThankYou(text, channel);
     }
 });
 

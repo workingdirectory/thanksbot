@@ -1,4 +1,3 @@
-const CronJob = require('cron').CronJob;
 const dayjs = require('dayjs');
 const { WebClient } = require('@slack/web-api');
 const slackAuth = require('./slackAuth');
@@ -13,8 +12,8 @@ class webAPI {
     /**
      * send message that repeats the thank you text to confirm spelling
      */
-    async confirmThankYou(tyText, channel, team) {
-        const slackClient = await this.getSlackClient(team);
+    async confirmThankYou(tyText, channel) {
+        const slackClient = await this.getSlackClient();
 
         try {
             await slackClient.chat.postMessage({
@@ -86,38 +85,25 @@ class webAPI {
         return intro;
     }
 
-    async getSlackClient(team = null, token = null) {
-        if (!token) {
-            token = await slackAuth.getSlackToken(team || this.team);
-        }
+    async getSlackClient() {
+        const token = await slackAuth.getSlackToken(this.team);
 
         return new WebClient(token);
     }
 
-    async init(team, token) {
-        const slackClient = await this.getSlackClient(team, token);
+    async init() {
+        const slackClient = await this.getSlackClient();
         const { channels } = await slackClient.conversations.list();
         const { id } = channels.find(({ is_general }) => is_general);
-        const reminderMessage = new CronJob(
-            '0 45 17 * * 3',
-            () => {
-                this.tyReminder();
-            },
-            null,
-            true,
-            'America/New_York'
-        );
 
         await slackClient.conversations.join({ channel: id });
-
-        reminderMessage.start();
     }
 
     /*
      * store message along with sender's display name
      */
-    async storeThankYou(user, text, team) {
-        const slackClient = await this.getSlackClient(team);
+    async storeThankYou(user, text) {
+        const slackClient = await this.getSlackClient();
         const today = dayjs().day();
         let nextPostDay = dayjs()
             .day(DIGEST_POST_DAY)
@@ -157,8 +143,9 @@ class webAPI {
         }
     }
 
-    async tyReminder(team = null) {
-        const slackClient = await this.getSlackClient(team || this.team);
+    async tyReminder() {
+        const slackClient = await this.getSlackClient();
+
         try {
             await slackClient.chat.postMessage({
                 channel: '#general',

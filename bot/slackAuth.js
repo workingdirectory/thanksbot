@@ -37,15 +37,16 @@ exports.authResponse = async function(req, res) {
             .status(200)
             .end();
     }
+
     const {
         team: { id },
         access_token
     } = authResponse;
-
     const saveSuccess = await saveSlackToken(id, access_token);
 
     if (saveSuccess) {
-        webAPI.init(id, access_token);
+        const slackWeb = new webAPI(id);
+        slackWeb.init();
         // TO DO: better celebratory page or redirect to another site?
         res.send('Success!');
     }
@@ -72,6 +73,8 @@ const encryptToken = function(token) {
 };
 
 exports.getSlackToken = async function(teamId) {
+    if (process.env.NODE_ENV === 'dev') return process.env.SLACK_TOKEN;
+
     let slackToken = null;
     let client = await pool.connect();
     const { token } = await client
@@ -91,6 +94,23 @@ exports.getSlackToken = async function(teamId) {
     }
 
     return slackToken;
+};
+
+exports.getSlackTeams = async function() {
+    let client = await pool.connect();
+    const teams = await client
+        .query('SELECT team_id FROM tokens;')
+        .then(res => {
+            client.release();
+            return res.rows.map(({ team_id }) => team_id);
+        })
+        .catch(e => {
+            client.release();
+            console.error(e.stack);
+            return null;
+        });
+
+    return teams;
 };
 
 const saveSlackToken = async function(teamId, token) {
