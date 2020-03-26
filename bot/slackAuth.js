@@ -73,8 +73,6 @@ const encryptToken = function(token) {
 };
 
 exports.getSlackToken = async function(teamId) {
-    if (process.env.NODE_ENV === 'dev') return process.env.SLACK_TOKEN;
-
     let slackToken = null;
     let client = await pool.connect();
     const { token } = await client
