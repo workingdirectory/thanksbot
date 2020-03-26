@@ -1,5 +1,8 @@
+const dayjs = require('dayjs');
 const { getSlackTeams } = require('../bot/slackAuth');
 const slackWeb = require('../bot/slackWeb');
+
+const REMINDER_DAY = 3;
 
 const sendReminder = async function() {
     const teams = await getSlackTeams();
@@ -10,4 +13,8 @@ const sendReminder = async function() {
     });
 };
 
-sendReminder();
+const today = dayjs().day();
+
+if (today === REMINDER_DAY) {
+    sendReminder();
+}
