@@ -3,6 +3,9 @@
     "version": "1.0.0",
     "description": "A bot to foster and celebrate a culture of appreciation",
     "main": "index.js",
+    "engines": {
+        "node": ">=12.0"
+    },
     "scripts": {
         "db-create-dev": "db-migrate --env init db:create thanksbot || echo \"Error setting up database\"",
         "db-create-role-dev": "psql -d \"thanksbot\" -c \"CREATE ROLE ty WITH LOGIN PASSWORD 'thankyou'\" || echo \"Error creating role\"",
