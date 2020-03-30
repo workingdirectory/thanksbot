@@ -3,7 +3,7 @@ const utc = require('dayjs/plugin/utc');
 const { WebClient } = require('@slack/web-api');
 const slackAuth = require('./slackAuth');
 
-const DIGEST_POST_DAY = 5;
+const DIGEST_POST_DAY = 1; // Monday
 // This hour values is in UTC time,
 // is around 12 EST depending on daylight savings
 const DIGEST_POST_HOUR = 16;
@@ -107,7 +107,7 @@ class webAPI {
             '✨🙏✨ We have some thank yous this week, hooray! ✨☺️✨';
 
         for (const [name, text] of Object.entries(tyObj)) {
-            intro += `\n - ${name} says ${text}`;
+            intro += `\n\t • ${name} says: ${text}`;
         }
 
         return intro;
