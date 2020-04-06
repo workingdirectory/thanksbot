@@ -19,6 +19,10 @@ const IV = crypto
 
 IV.copy(RESIZED_IV);
 
+/**
+ * Respond to Slack's auth check and save a workspace's API token
+ * if Slack says authentication is successful
+ */
 exports.authResponse = async function(req, res) {
     const { code } = req.query;
     const slackURL =
