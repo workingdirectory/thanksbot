@@ -127,6 +127,20 @@ class webAPI {
         await slackClient.conversations.join({ channel: id });
     }
 
+    async isDupeMessage(userId, text) {
+        const postTime = this.getPostTime();
+        const previousTy = await this.getExistingThankYou(postTime);
+        const previousText = previousTy ? previousTy.text : null;
+
+        if (!previousText) return false;
+
+        if (previousText.includes(`<@${userId}> says: ${text}`)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /*
      * store message along with sender's display name
      */
