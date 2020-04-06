@@ -101,6 +101,31 @@ We're using Prettier and Eslint for maintaining code style consistency. You can 
 
 This bot is hosted on Heroku. It uses the `master` branch for deployment and is [deployed manually.](https://devcenter.heroku.com/articles/github-integration#manual-deploys) [Heroku Scheduler](https://devcenter.heroku.com/articles/scheduler) executes the script to post a reminder message every week. This script runs daily since Scheduler doesn't offer a weekly cadence, but the script itself [checks if the reminder should be posted that day](https://github.com/workingdirectory/thanksbot/blob/master/scripts/reminderJob.js#L18) and then posts if so.
 
+Below is a diagram of how the different pieces of the production environment work together:
+
+```
+
+                      +------------------------------------+
+                      |                                    |
+                      | Heroku                             |
+                      |   hosts:                           |
+                      |     * server                       |
+          +---------->+     * API token database           +<-----------+
+          |           |     * cron jobs (Heroku Scheduler) |            |
+          |    +------+   sends responses to Slack         |            |
+          |    |      |                                    |            |
+          |    |      +------------------------------------+            |
+          |    |                                                        |
+          |    |                                                        |
+          |    v                                                        |
++---------+----+------------+                      +--------------------+-------------------+
+|                           |                      |                                        |
+| Slack                     |                      | Github                                 |
+|  * user interface         |                      | hosts the codebase that Heroku uses to |
+|  * sends events to server |                      | deploy the bot's server                |
+|                           |                      |                                        |
++---------------------------+                      +----------------------------------------+
+```
 
 ## Contributing
 
