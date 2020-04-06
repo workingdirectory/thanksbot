@@ -24,7 +24,7 @@ slackInteractions.action({ type: 'button' }, (payload, respond) => {
     } else {
         respond({
             text:
-                'Message cancelled! Submit another thank you if you to publish your message.',
+                'Message cancelled! Submit another thank you if you wish to publish your message.',
             response_type: 'in_channel'
         });
     }
