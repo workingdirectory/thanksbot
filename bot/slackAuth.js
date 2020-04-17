@@ -77,7 +77,7 @@ const encryptToken = function(token) {
 exports.getSlackToken = async function(teamId) {
     let slackToken = null;
     let client = await pool.connect();
-    const response =  await client
+    const response = await client
         .query('SELECT token FROM tokens WHERE team_id = $1', [teamId])
         .then(res => {
             client.release();
