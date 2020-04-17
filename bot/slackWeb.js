@@ -120,6 +120,9 @@ class webAPI {
      * Use this Slack workspace's token to get a Slack web API client
      */
     async getSlackClient() {
+    
+        console.trace("this.team", this.team);
+        console.log('this', this);
         const token = await slackAuth.getSlackToken(this.team);
 
         return new WebClient(token);
