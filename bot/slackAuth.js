@@ -24,7 +24,6 @@ IV.copy(RESIZED_IV);
  * if Slack says authentication is successful
  */
 exports.authResponse = async function(req, res) {
-    console.log('inauthresponse');
     const { code } = req.query;
     const slackURL =
         'https://slack.com/api/oauth.v2.access?code=' +
@@ -35,10 +34,7 @@ exports.authResponse = async function(req, res) {
         process.env.SLACK_CLIENT_SECRET +
         '&redirect_uri=' +
         process.env.SLACK_REDIRECT_URI;
-        console.log('slackURL', slackURL);
     const authResponse = await fetch(slackURL).then(res => res.json());
-        console.log('authResponse', authResponse);
-
     if (!authResponse.ok) {
         res.send('Error encountered: \n' + JSON.stringify(authResponse))
             .status(200)
@@ -50,9 +46,7 @@ exports.authResponse = async function(req, res) {
         access_token
     } = authResponse;
     const saveSuccess = await saveSlackToken(id, access_token);
-    console.log('outSuccess') 
     if (saveSuccess) {
-        console.log('inSuccess')
         const slackWeb = new webAPI(id);
         slackWeb.init();
         // TO DO: better celebratory page or redirect to another site?
@@ -83,7 +77,6 @@ const encryptToken = function(token) {
 exports.getSlackToken = async function(teamId) {
     let slackToken = null;
     let client = await pool.connect();
-    console.log('teamid', teamId)
     const response =  await client
         .query('SELECT token FROM tokens WHERE team_id = $1', [teamId])
         .then(res => {
@@ -95,7 +88,6 @@ exports.getSlackToken = async function(teamId) {
             console.error(e.stack);
             return null;
         });
-    console.log('$$$$$$ response', response)
 
     if (response && response.token) {
         slackToken = decryptToken(response.token);
