@@ -35,7 +35,6 @@ exports.authResponse = async function(req, res) {
         '&redirect_uri=' +
         process.env.SLACK_REDIRECT_URI;
     const authResponse = await fetch(slackURL).then(res => res.json());
-
     if (!authResponse.ok) {
         res.send('Error encountered: \n' + JSON.stringify(authResponse))
             .status(200)
@@ -47,7 +46,6 @@ exports.authResponse = async function(req, res) {
         access_token
     } = authResponse;
     const saveSuccess = await saveSlackToken(id, access_token);
-
     if (saveSuccess) {
         const slackWeb = new webAPI(id);
         slackWeb.init();
@@ -79,7 +77,7 @@ const encryptToken = function(token) {
 exports.getSlackToken = async function(teamId) {
     let slackToken = null;
     let client = await pool.connect();
-    const { token } = await client
+    const response = await client
         .query('SELECT token FROM tokens WHERE team_id = $1', [teamId])
         .then(res => {
             client.release();
@@ -91,8 +89,8 @@ exports.getSlackToken = async function(teamId) {
             return null;
         });
 
-    if (token) {
-        slackToken = decryptToken(token);
+    if (response && response.token) {
+        slackToken = decryptToken(response.token);
     }
 
     return slackToken;
