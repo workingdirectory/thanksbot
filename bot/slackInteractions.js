@@ -39,8 +39,7 @@ slackInteractions.action({ type: 'button' }, async (payload, respond) => {
     }
 
     respond({
-        text:
-            'Message cancelled! Send another message to try again.',
+        text: 'Message cancelled! Send another message to try again.',
         response_type: 'in_channel'
     });
 });

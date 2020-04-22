@@ -79,7 +79,7 @@ class webAPI {
             await slackClient.chat.postMessage({
                 channel: '#general',
                 text:
-                    'Someone\'\s feeling grateful... how about you? Send a message to thanksbot to share your appreciation with the community :clap: 🎉'
+                    'Someone is feeling grateful... how about you? Send a message to thanksbot to share your appreciation with the community :clap: 🎉'
             });
         } catch (error) {
             console.log(error);
@@ -153,7 +153,7 @@ class webAPI {
     formatThankYou(tyObj, previousText = null) {
         let intro =
             previousText ||
-            '✨:tada:✨ Hot off the press - it\'\s a fresh edition of thanksbot digest! Here are a few things our community is thankful for this week - to share your own gratitude, send a message to thanksbot: ✨🙏✨';
+            '✨:tada:✨ Hot off the press - a fresh edition of thanksbot digest! Here are a few things our community is thankful for this week - to share your own gratitude, send a message to thanksbot: ✨🙏✨';
 
         for (const [name, text] of Object.entries(tyObj)) {
             intro += `\n\t • ${name} says: ${text}`;
