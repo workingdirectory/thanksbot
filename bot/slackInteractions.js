@@ -19,7 +19,7 @@ slackInteractions.action({ type: 'button' }, async (payload, respond) => {
     if (isDupe) {
         respond({
             text:
-                'Looks like you have submitted duplicate thank you text for this week. Please try another one!',
+                'Looks like you have submitted duplicate text for this week. Please try another one!',
             response_type: 'in_channel'
         });
 
@@ -29,17 +29,17 @@ slackInteractions.action({ type: 'button' }, async (payload, respond) => {
     if (tyConfirmed) {
         respond({
             text:
-                'Thank you for your submission! It will be shared in the weekly digest.',
+                ':100: Thank you for your submission! It will be shared in the weekly digest.',
             response_type: 'in_channel'
         });
         webAPI.storeThankYou(user, value);
+        webAPI.postPromptMessage();
 
         return;
     }
 
     respond({
-        text:
-            'Message cancelled! Submit another thank you if you wish to publish your message.',
+        text: 'Message cancelled! Send another message to try again.',
         response_type: 'in_channel'
     });
 });

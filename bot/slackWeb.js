@@ -70,6 +70,23 @@ class webAPI {
     }
 
     /**
+     * Post a prompt message after someone submits a message
+     */
+    async postPromptMessage() {
+        const slackClient = await this.getSlackClient();
+
+        try {
+            await slackClient.chat.postMessage({
+                channel: '#general',
+                text:
+                    'Someone is feeling grateful... how about you? Send a message to thanksbot to share your appreciation with the community :clap: 🎉'
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    /**
      *  Check if a scheduled message exists for the same day as the
      *  timestamp argument `postTime`
      *
@@ -108,7 +125,7 @@ class webAPI {
             .minute(DIGEST_POST_MINUTE);
 
         // Check if we're close to or past the digest posting time
-        // and get nexts week's post time if so
+        // and get next week's post time if so
         if (today > nextPostTime.unix() - THREE_MINUTES) {
             nextPostTime = dayjs(nextPostTime).add(7, 'day');
         }
@@ -136,7 +153,7 @@ class webAPI {
     formatThankYou(tyObj, previousText = null) {
         let intro =
             previousText ||
-            '✨🙏✨ We have some thank yous this week, hooray! ✨☺️✨';
+            '✨:tada:✨ Hot off the press - a fresh edition of thanksbot digest! Here are a few things our community is thankful for this week - to share your own gratitude, send a message to thanksbot: ✨🙏✨';
 
         for (const [name, text] of Object.entries(tyObj)) {
             intro += `\n\t • ${name} says: ${text}`;
@@ -215,7 +232,7 @@ class webAPI {
     }
 
     /**
-     * Post a message to the general channel reminding workspace members to
+     * Post a scheduled message to the general channel reminding workspace members to
      * send a thank you
      */
     async tyReminder() {
@@ -225,7 +242,7 @@ class webAPI {
             await slackClient.chat.postMessage({
                 channel: '#general',
                 text:
-                    '👋 Howdy! Feeling like someone in this community has been helpful or kind this week? Send thanksbot a direct message to acknowledge this person! Your shout out will be posted Monday 💪 🎉'
+                    '👋 Has someone in this community been helpful or kind this week? Send thanksbot a direct message to acknowledge them! Gratitude feels good 💪 🎉'
             });
         } catch (error) {
             console.log(error);
