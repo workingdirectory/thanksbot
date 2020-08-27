@@ -138,7 +138,9 @@ Try thanksbot out in your organization or community workspace (you may need to g
   * Please test your code locally before submitting
 * Wait for review - we will try to review PRs within 5 days of submission, but please be patient.
 
-thanksbot is maintained by [@jorydotcom]() and [@kbroida](https://twitter.com/kbroida).
+thanksbot is maintained by [@jorydotcom](https://twitter.com/jorydotcom) and [@kbroida](https://twitter.com/kbroida).
+
+Icon by [@mjchamplin](https://twitter.com/mjchamplin).
 
 ## License
 
